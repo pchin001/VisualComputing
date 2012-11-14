@@ -4,10 +4,10 @@ clear all
 
 %% Set 1
 imgs = [
-    'DSCF4177';
-    'DSCF4179';
-    'DSCF4183';
-    'DSCF4186';
+%     'DSCF4177';
+%     'DSCF4179';
+%     'DSCF4183';
+%     'DSCF4186';
     'DSCF4188';
     'DSCF4192';
 ];
@@ -31,7 +31,7 @@ n = 24;
 
 %% Load and Plot 2D to find 3D Correspondence
 
-for j = 1:1
+for j = 1:length(imgs)
     load_img = strcat('../imgset1/', imgs(j,:), '.jpg');
     load_mat = strcat('ccdata/', imgs(j,:), '.mat');
     load(load_mat);

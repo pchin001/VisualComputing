@@ -2,19 +2,19 @@
 clc
 clear all
 
+% set to 1 to see test points on image plot
+errorCheck = 0;
+
+% set to 1 to use XY coordinate system
+% set to 0 to use image coordinate system
 convertXY = 0;
-width = 2848;
-height = 2136;
+imgw = 2848;
+imgh = 2136;
 
 
-%% Load the sample test data 
-% load('dscf4177_pixel.mat');
-% D2 = dscf4177.D2(1:end,:)';
-% D3 = dscf4177.D3(1:end,:)';
+%% Load the image set to use
 
-
-%% Load the set 1 data
-
+% set 1
 imgs = [
     'DSCF4177';
     'DSCF4179';
@@ -24,65 +24,102 @@ imgs = [
     'DSCF4192';
 ];
 
-[len,~] = size(imgs);
+% set 2
+% imgs = [
+% ];
 
+%% Initialize variables to save calculations from each image
+[len,~] = size(imgs);
+projection = reshape(repmat(eye(4,4),1,len), 4,4,len);
+intrinsic = reshape(repmat(eye(4,4),1,len), 4,4,len);
+rotation = reshape(repmat(eye(4,4),1,len), 4,4,len);
+translation = reshape(repmat(eye(4,4),1,len), 4,4,len);
+avgerr = zeros(1,len);
+
+
+%% Begin calculation for each image
 for i = 1:len
     load_file = strcat('ccdata/', imgs(i,:), '_2D_3D.mat');
     load(load_file);
-    D2 = data.D2';
-    D3 = data.D3';
     
-    %% Convert image coordinates to XY coordinates
+    % use odd set of data to calculate C
+    data2D = data.D2(1:end,:)';
+    data3D = data.D3(1:end,:)';
+    
+    % choose some 3D test points
+    test3D = [
+          0,   0,  50, 1;
+          0,   0,   0, 1;
+        100, 100,   0, 1;
+        100, 100,  50, 1;
+    ]';
+    
+    % Convert image coordinates to XY coordinates
     if(convertXY)
-        D2(1,:) = D2(1,:) - width/2;
-        D2(2,:) = -D2(2,:) + height/2;
+        data2D(1,:) = data2D(1,:) - imgw/2;
+        data2D(2,:) = -data2D(2,:) + imgh/2;
     end
 
-
-    %% Calculate the intrinsic and extrinsic properties
-    [C,A,R,T] = CameraCalibration(D2,D3);
-
-
-    %% Test the C matrix
-
-    % use original input as test points
-    test3D = D3; % original input
-    test2D = D2;
-
-    % use corners as test points, test2D is from 'DSCF4177.jpg'
-%     test3D(:,1) = [0 0 0 1]'; % origin
-%     test2D(:,1) = [222 1563 1]';
-%     test3D(:,2) = [20 180 0 1]'; % top left corner
-%     test2D(:,2) = [1243 669 1]';
-%     test3D(:,3) = [180 200 0 1]'; % top right corner
-%     test2D(:,3) = [2455 885 1]';
-
-    % calculate
-    newD2 = C * test3D;
-
-    % normalize so that w = 1
-    newD2(1,:) = newD2(1,:) ./ newD2(3,:);
-    newD2(2,:) = newD2(2,:) ./ newD2(3,:);
-    newD2(3,:) = newD2(3,:) ./ newD2(3,:);
-
-    % convert (x,y) back to (row,col)
-    if(convertXY)
-        newD2(1,:) = newD2(1,:) + width/2;
-        newD2(2,:) = -(newD2(2,:) - height/2);
+    % Calculate the intrinsic and extrinsic properties
+%     [C, A, R, T, ~, ~, ~, ~] = funcCalibrate(data3D(1:3,:)',data2D(1:2,:)');
+    [C,A,R,T] = CameraCalibration(data2D,data3D);
+        
+    % store this image's A to compare with other images' A
+    projection(1:3,1:4,i) = C;
+    intrinsic(1:3,1:3,i) = A;
+    rotation(1:3,1:3,i) = R;
+    translation(1:3,4,i) = T;
+    
+    % calculate prediction, and compare with image
+    if(errorCheck)
+        pred2D = C * test3D;
+        pred2D = pred2D ./ repmat(pred2D(3,:),3,1); % normalize w = 1    
+        imshow(strcat('../imgset1/', imgs(i,:), '.jpg'));
+        hold on;
+        plot(pred2D(1,:),pred2D(2,:),'Marker','p','Color',[.88 .48 0],'MarkerSize',20)
+        pause;
     end
-
-    % compare
-    % test2D
-    % newD2
-
-    % find error, by euclidian distance
-    [~,count] = size(newD2);
-    avgerr = abs(test2D - newD2); % diff
-    avgerr = sqrt(avgerr(1,:).^2 + avgerr(2,:).^2); % euclidian
-    avgerr = sum(avgerr) ./ count % average error
-
-    %% print out A to verify
-    A
-
+    
 end
 
+
+
+%% print out the calculations from each image
+
+% mean and variance of A
+intrinsic;
+intrinsicMean = mean(intrinsic,3);
+intrinsicStd = std(intrinsic,0,3);
+intrinsicScale = intrinsicStd ./ intrinsicMean;
+
+% mean and variance of R
+rotation;
+
+% location of camera, T
+translation;
+
+    
+%% save the information
+C = projection(1:3,1:4,:);
+A = intrinsic(1:3,1:3,:);
+R = rotation(1:3,1:3,:);
+T = translation(1:3,4,:);
+save_file = strcat('../imgset1/CART.mat');
+save(save_file, 'C', 'A', 'R', 'T');
+
+
+%% plot orientation and position of cameras
+
+figure;
+hold on;
+xlabel('x');
+ylabel('y');
+zlabel('z');
+plot([0 200 200 0 0],[0 0 200 200 0]);
+for i = 1:len
+    camera = [0 0 0 1; 100 0 0 1]';
+    camera = translation(:,:,i)*rotation(:,:,i)*camera
+    camera = camera ./ repmat(camera(4,:),4,1)
+    arrow(camera(1:3,1), camera(1:3,2));
+
+end

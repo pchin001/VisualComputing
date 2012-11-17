@@ -9,22 +9,23 @@ linsys = zeros(len*2,12);
 for i = 1:len
     row = 2*i - 1;
     % u coordinate row
-    linsys(row,1:4) = -D3(:,i);
-    linsys(row,9:12) = D2(1,i) .* D3(1:4,i);
+    linsys(row,1:4) = D3(:,i);
+    linsys(row,9:12) = -D2(1,i) .* D3(:,i);
     % v coordinate row
-    linsys(row+1,5:8) = -D3(:,i);
-    linsys(row+1,9:12) = D2(2,i) .* D3(1:4,i);
+    linsys(row+1,5:8) = D3(:,i);
+    linsys(row+1,9:12) = -D2(2,i) .* D3(:,i);
 end
 
 
 %% Solve calibration matrix using SVD
-[U,S,V] = svd(linsys,0);
+
+% 12 unknowns
+[U,S,V] = svd(linsys);
 C = reshape(V(:,end),4,3)';
 
 % Scale the camera matrix with a scale factor
-C = C ./ sqrt(C(3,1)^2 + C(3,2)^2 + C(3,3)^2); % singularity free
-% C = C ./ C(end,end); % singularity if last cell is small
-C;
+% C = C ./ sqrt(C(3,1)^2 + C(3,2)^2 + C(3,3)^2); % singularity free
+C = C ./ C(end,end); % singularity if last cell is small
 
 
 %% Find A,R,T using Zhang's method
@@ -53,34 +54,30 @@ zhangA = [
 ];
 
 % find extrinsic properties of camera, R and T
-zhangR = inv(zhangA) * B;
-zhangT = inv(zhangA) * b;
-% zhangT = -zhangR' * zhangT;
-% zhangT = -inv(B) * b;
+zhangR = inv(zhangA) * B; % K-1 B = K-1 K R
+zhangT = inv(B) * b;
 
+% zhangT is the position of 3D origin (0,0,0) with respect to the camera's
+% coordinate system. We reverse it here to find the camera's position with
+% respect to the global 3D coordinate system.
+zhangT = -zhangT;
+zhangR = -zhangR;
 
 %% Find A,R,T using Majumder and Wiki
 B = C(1:3,1:3);
 
 % find A and R using RQ-Decomposition
 % this implements RQ Decomposition using QR Decomposition
+% http://www.physicsforums.com/showthread.php?t=261739
+ReverseRows = [0 0 1; 0 1 0 ; 1 0 0];
+[wikiR, wikiA] = qr((ReverseRows * B)');
+wikiA = ReverseRows * wikiA' * ReverseRows;
+wikiR = ReverseRows * wikiR';
 
 
+% find A and R using RQ-Decomposition from online
 % http://www.mathworks.com/matlabcentral/fileexchange/24119-dont-let-that-inv-go-past-your-eyes-to-solve-that-system-factorize/content/Factorize/rq.m
 [wikiA,wikiR] = rq(B);
-
-
-
-% ReverseRows = [0 0 1; 0 1 0 ; 1 0 0];
-% [wikiR, wikiA] = qr((ReverseRows * B)');
-% wikiA = ReverseRows * wikiA' * ReverseRows;
-% wikiR = ReverseRows * wikiR';
-
-% http://www.physicsforums.com/showthread.php?t=261739
-% ReverseRows = [0 0 1; 0 1 0 ; 1 0 0];
-% [Q R] = qr((ReverseRows * A)');
-% R = ReverseRows * R' * ReverseRows;
-% Q = ReverseRows * Q';
 
 
 
@@ -98,10 +95,11 @@ wikiT = inv(B) * C(:,end); % same as line above, since B = A*R
 % coordinate system. We reverse it here to find the camera's position with
 % respect to the global 3D coordinate system.
 wikiT = -wikiT;
+% wikiR = -wikiR;
 
 
 %% Return the ones we want
-% 
+
 % A = zhangA;
 % R = zhangR;
 % T = zhangT;

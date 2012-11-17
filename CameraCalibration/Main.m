@@ -1,4 +1,9 @@
 %% Part A: Camera Calibration
+
+% http://www.vision.caltech.edu/bouguetj/calib_doc/papers/heikkila97.pdf
+% http://excelsior.cs.ucsb.edu/courses/cs290i_mvg/pdf/calibration.pdf
+
+%% setup
 clc
 clear all
 
@@ -7,7 +12,7 @@ errorCheck = 0;
 
 % set to 1 to use XY coordinate system
 % set to 0 to use image coordinate system
-convertXY = 0;
+convertXY = 1;
 imgw = 2848;
 imgh = 2136;
 
@@ -63,7 +68,9 @@ for i = 1:len
     % Calculate the intrinsic and extrinsic properties
 %     [C, A, R, T, ~, ~, ~, ~] = funcCalibrate(data3D(1:3,:)',data2D(1:2,:)');
     [C,A,R,T] = CameraCalibration(data2D,data3D);
-        
+    R = sign(C(3,4)) .* R;
+%     T = sign(C(3,4)) .* T;
+    
     % store this image's A to compare with other images' A
     projection(1:3,1:4,i) = C;
     intrinsic(1:3,1:3,i) = A;
@@ -92,34 +99,17 @@ intrinsicMean = mean(intrinsic,3);
 intrinsicStd = std(intrinsic,0,3);
 intrinsicScale = intrinsicStd ./ intrinsicMean;
 
-% mean and variance of R
-rotation;
-
-% location of camera, T
-translation;
-
     
 %% save the information
 C = projection(1:3,1:4,:);
-A = intrinsic(1:3,1:3,:);
-R = rotation(1:3,1:3,:);
-T = translation(1:3,4,:);
+A = intrinsic(1:3,1:3,:)
+R = rotation(1:3,1:3,:)
+T = translation(1:3,4,:)
 save_file = strcat('../imgset1/CART.mat');
 save(save_file, 'C', 'A', 'R', 'T');
 
 
 %% plot orientation and position of cameras
 
-figure;
-hold on;
-xlabel('x');
-ylabel('y');
-zlabel('z');
-plot([0 200 200 0 0],[0 0 200 200 0]);
-for i = 1:len
-    camera = [0 0 0 1; 100 0 0 1]';
-    camera = translation(:,:,i)*rotation(:,:,i)*camera
-    camera = camera ./ repmat(camera(4,:),4,1)
-    arrow(camera(1:3,1), camera(1:3,2));
+PlotCamerasInScene(rotation, translation);
 
-end

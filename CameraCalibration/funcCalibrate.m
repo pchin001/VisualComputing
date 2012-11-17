@@ -1,3 +1,5 @@
+% http://siddhantahuja.wordpress.com/2010/02/20/570/
+
 % *************************************************************************
 % Title: Function-Produce Calibration Matrix and Average Pixel Error using
 % Singular value decomposition (SVD)

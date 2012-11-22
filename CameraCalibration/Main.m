@@ -31,6 +31,7 @@ imgs = [
 
 % set 2
 % imgs = [
+%     
 % ];
 
 %% Initialize variables to save calculations from each image
@@ -68,8 +69,17 @@ for i = 1:len
     % Calculate the intrinsic and extrinsic properties
 %     [C, A, R, T, ~, ~, ~, ~] = funcCalibrate(data3D(1:3,:)',data2D(1:2,:)');
     [C,A,R,T] = CameraCalibration(data2D,data3D);
-    R = sign(C(3,4)) .* R;
-%     T = sign(C(3,4)) .* T;
+    
+    % Switch some angles to make it right
+    % http://nghiaho.com/?page_id=846
+    % http://www.robertblum.com/articles/2005/02/14/decomposing-matrices
+    thetaX = atan2(R(3,2),R(3,3));
+    thetaX = -thetaX;
+    thetaY = atan2(-R(3,1),sqrt(R(3,2)^2+R(3,3)^2));
+%     thetaY = -thetaY;
+    thetaZ = atan2(R(2,1),R(1,1));
+%     thetaZ = -thetaZ;
+    R(:,:) = Rz(thetaZ)' * Ry(thetaY)' * Rx(thetaX)';
     
     % store this image's A to compare with other images' A
     projection(1:3,1:4,i) = C;
@@ -102,9 +112,9 @@ intrinsicScale = intrinsicStd ./ intrinsicMean;
     
 %% save the information
 C = projection(1:3,1:4,:);
-A = intrinsic(1:3,1:3,:)
-R = rotation(1:3,1:3,:)
-T = translation(1:3,4,:)
+A = intrinsic(1:3,1:3,:);
+R = rotation(1:3,1:3,:);
+T = translation(1:3,4,:);
 save_file = strcat('../imgset1/CART.mat');
 save(save_file, 'C', 'A', 'R', 'T');
 

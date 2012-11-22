@@ -69,10 +69,10 @@ B = C(1:3,1:3);
 % find A and R using RQ-Decomposition
 % this implements RQ Decomposition using QR Decomposition
 % http://www.physicsforums.com/showthread.php?t=261739
-ReverseRows = [0 0 1; 0 1 0 ; 1 0 0];
-[wikiR, wikiA] = qr((ReverseRows * B)');
-wikiA = ReverseRows * wikiA' * ReverseRows;
-wikiR = ReverseRows * wikiR';
+% ReverseRows = [0 0 1; 0 1 0 ; 1 0 0];
+% [wikiR, wikiA] = qr((ReverseRows * B)');
+% wikiA = ReverseRows * wikiA' * ReverseRows;
+% wikiR = ReverseRows * wikiR';
 
 
 % find A and R using RQ-Decomposition from online

@@ -23,90 +23,96 @@ end
 [U,S,V] = svd(linsys);
 C = reshape(V(:,end),4,3)';
 
-% Scale the camera matrix with a scale factor
-% C = C ./ sqrt(C(3,1)^2 + C(3,2)^2 + C(3,3)^2); % singularity free
-C = C ./ C(end,end); % singularity if last cell is small
 
+%% Scale the camera matrix with a scale factor
 
-%% Find A,R,T using Zhang's method
-% http://cronos.rutgers.edu/~meer/TEACHTOO/PAPERS/zhang.pdf
+% this scaling is singularity free
+% C = C ./ sqrt(C(3,1)^2 + C(3,2)^2 + C(3,3)^2);
 
-% setup
-B = C(1:3,1:3);
-b = C(:,end);
-K = B*B';
+% this scaling my produce a singular matrix if last cell is small
+% C = C ./ C(end,end);
 
-% find intrinsic matrix, A
-uo = K(1,3);
-vo = K(2,3);
-ku = K(1,1);
-kc = K(2,1);
-kv = K(2,2);
-beta = sqrt(kv - vo^2);
-lambda = (kc - uo*vo) / beta;
-alpha = sqrt(ku - uo^2 - lambda^2);
-
-% put A together
-zhangA = [
-    alpha   lambda  uo;
-    0       beta    vo;
-    0       0       1;
-];
-
-% find extrinsic properties of camera, R and T
-zhangR = inv(zhangA) * B; % K-1 B = K-1 K R
-zhangT = inv(B) * b;
-
-% zhangT is the position of 3D origin (0,0,0) with respect to the camera's
-% coordinate system. We reverse it here to find the camera's position with
-% respect to the global 3D coordinate system.
-zhangT = -zhangT;
-zhangR = -zhangR;
 
 %% Find A,R,T using Majumder and Wiki
 B = C(1:3,1:3);
 
-% find A and R using RQ-Decomposition
-% this implements RQ Decomposition using QR Decomposition
-% http://www.physicsforums.com/showthread.php?t=261739
-% ReverseRows = [0 0 1; 0 1 0 ; 1 0 0];
-% [wikiR, wikiA] = qr((ReverseRows * B)');
-% wikiA = ReverseRows * wikiA' * ReverseRows;
-% wikiR = ReverseRows * wikiR';
-
-
 % find A and R using RQ-Decomposition from online
-% http://www.mathworks.com/matlabcentral/fileexchange/24119-dont-let-that-inv-go-past-your-eyes-to-solve-that-system-factorize/content/Factorize/rq.m
 [wikiA,wikiR] = rq(B);
-
-
-
-% find A and R using QR-Decomposition
-% [wikiR,wikiA] = qr(B); % R is Rotation Matrix, A is Intrinsic Properies
 
 % normalize A so that last cell is 1
 wikiA = wikiA ./ wikiA(end:end);
 
-% find T
-% wikiT = -wikiR' * inv(wikiA) * C(:,end); % A*R*T = C(last column)
-wikiT = inv(B) * C(:,end); % same as line above, since B = A*R
+% find T, where A*R*T = C(last column)
+wikiT = inv(B) * C(:,end); % since B = A*R
 
 % wikiT is the position of 3D origin (0,0,0) with respect to the camera's
 % coordinate system. We reverse it here to find the camera's position with
 % respect to the global 3D coordinate system.
 wikiT = -wikiT;
-% wikiR = -wikiR;
 
 
-%% Return the ones we want
+%% Switch some angles to make it correct
 
-% A = zhangA;
-% R = zhangR;
-% T = zhangT;
+% http://nghiaho.com/?page_id=846
+% http://www.robertblum.com/articles/2005/02/14/decomposing-matrices
+
+% The intrinsic properties matrix, A, is not the same across images. I
+% suspect that RQ Decomposition is giving us a rotation matrix with one or
+% more of the rotations negated. Fortunately, for the data set I am using,
+% RQ Decomposition seems to consistently negate the X Rotation.
+
+% decompose the rotation matrix into X,Y,Z rotations
+thetaX = atan2(wikiR(3,2),wikiR(3,3));
+thetaY = atan2(-wikiR(3,1),sqrt(wikiR(3,2)^2+wikiR(3,3)^2));
+thetaZ = atan2(wikiR(2,1),wikiR(1,1));
+
+% choose which rotation to negate
+thetaX = -thetaX;
+% thetaY = -thetaY;
+% thetaZ = -thetaZ;
+
+% recombine the rotation matrices
+wikiR = Rz(thetaZ)' * Ry(thetaY)' * Rx(thetaX)';
+
+
+%% The graveyard of test code
+
+% thetaX = atan2(Rnew(3,2),Rnew(3,3)) / pi * 180;
+% thetaY = atan2(-Rnew(3,1),sqrt(Rnew(3,2)^2+Rnew(3,3)^2)) / pi * 180;
+% thetaZ = atan2(Rnew(2,1),Rnew(1,1)) / pi * 180;
+
+% 
+% % C = A * R;
+% C(1:3,1:3);
+% Cnew = wikiA*Rnew;
+% % X = C(1:3,1:3) * inv(Cnew);
+% X = R * inv(Rnew);
+% % R = X * Rnew
+% Ccheck = wikiA * X * Rnew;
+% % Cnew = A * X * Rnew
+% % C = X * Cnew
+% % C = A * X * Rnew          replacement with Cnew
+% % C = X * newA * newR       RQ Decompose Cnew
+% [newR, newA] = qr(Cnew);
+% % wikiA = wikiA ./ wikiA(end,end);
+% newA = X * newA;
+% % newA = newA ./ newA(end,end);
+% newR;
+% X * newA * newR
+
+
+% thetaX = atan2(newR(3,2),newR(3,3))
+% thetaY = atan2(-newR(3,1),sqrt(newR(3,2)^2+newR(3,3)^2))
+% thetaZ = atan2(newR(2,1),newR(1,1))
+
+
+    
+%% Return
 
 A = wikiA;
 R = wikiR;
 T = wikiT;
+
 
 end
 

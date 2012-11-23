@@ -1,3 +1,5 @@
+% http://www.mathworks.com/matlabcentral/fileexchange/24119-dont-let-that-inv-go-past-your-eyes-to-solve-that-system-factorize/content/Factorize/rq.m
+
 function [R, Q] = rq (A, m, n)
 %RQ economy RQ or QL factorization of a full matrix A.
 %   No special handling is done for rank-deficient matrices.

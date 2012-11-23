@@ -11,7 +11,7 @@ clear all
 %% set options
 
 % select image set 1 or 2
-set = '2';
+set = '1';
 
 % set to 1 to see test points on image plot
 errorCheck = 0;

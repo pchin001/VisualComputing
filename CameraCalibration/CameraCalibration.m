@@ -47,8 +47,10 @@ wikiT = inv(B) * C(:,end); % since B = A*R
 
 % wikiT is the position of 3D origin (0,0,0) with respect to the camera's
 % coordinate system. We reverse it here to find the camera's position with
-% respect to the global 3D coordinate system.
+% respect to the global 3D coordinate system. The same reasoning is applied
+% to wikiR.
 wikiT = -wikiT;
+wikiR = wikiR';
 
 
 %% Switch some angles to make it correct
@@ -58,21 +60,24 @@ wikiT = -wikiT;
 
 % The intrinsic properties matrix, A, is not the same across images. I
 % suspect that RQ Decomposition is giving us a rotation matrix with one or
-% more of the rotations negated. Fortunately, for the data set I am using,
-% RQ Decomposition seems to consistently negate the X Rotation.
+% more of the rotations negated. Here, we attempt to reverse one or more of
+% the axis of rotations in an attempt to get the correct results.
 
-% decompose the rotation matrix into X,Y,Z rotations
-thetaX = atan2(wikiR(3,2),wikiR(3,3));
-thetaY = atan2(-wikiR(3,1),sqrt(wikiR(3,2)^2+wikiR(3,3)^2));
-thetaZ = atan2(wikiR(2,1),wikiR(1,1));
+if(sign(wikiA(1,1)) > 0)
+    
+    % decompose the rotation matrix into X,Y,Z rotations
+    thetaX = atan2(wikiR(3,2),wikiR(3,3));
+    thetaY = atan2(-wikiR(3,1),sqrt(wikiR(3,2)^2+wikiR(3,3)^2));
+    thetaZ = atan2(wikiR(2,1),wikiR(1,1));
+    
+    % choose which rotation to negate
+    thetaX = pi-thetaX;
+    thetaY = pi-thetaY;
+    % thetaZ = -thetaZ;
 
-% choose which rotation to negate
-thetaX = -thetaX;
-% thetaY = -thetaY;
-% thetaZ = -thetaZ;
-
-% recombine the rotation matrices
-wikiR = Rz(thetaZ)' * Ry(thetaY)' * Rx(thetaX)';
+    % recombine the rotation matrices
+    wikiR = Rz(thetaZ)' * Ry(thetaY)' * Rx(thetaX)';
+end
 
 
 %% The graveyard of test code

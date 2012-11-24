@@ -3,6 +3,7 @@
 clc
 clear all
 
+
 %% Possible readings and sources
 % http://www.vision.caltech.edu/bouguetj/calib_doc/papers/heikkila97.pdf
 % http://excelsior.cs.ucsb.edu/courses/cs290i_mvg/pdf/calibration.pdf
@@ -123,5 +124,11 @@ save(save_file, 'C', 'A', 'R', 'T');
 %% plot orientation and position of cameras
 
 PlotCamerasInScene(rotation, translation);
-
+hold on;
+[idx,X,Y,Z] = textread('../DepthEstimation/subset1-3dcoords.txt', '%d %f %f %f', 'headerlines', 2);
+scatter3(X,Y,Z,'.');
+% dt = DelaunayTri([X Y Z]);
+% tetramesh(dt, 'FaceColor', 'cyan');
+% dt = delaunay([X Y Z]);
+% trisurf(dt);
 

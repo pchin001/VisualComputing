@@ -63,6 +63,10 @@ wikiR = wikiR';
 % more of the rotations negated. Here, we attempt to reverse one or more of
 % the axis of rotations in an attempt to get the correct results.
 
+% First, we detect whether the predicted focal length of the inrinsic
+% properties is positive. For some reason, a negative focal length produced
+% a Y-axis pointing up, which is what we want.
+
 if(sign(wikiA(1,1)) > 0)
     
     % decompose the rotation matrix into X,Y,Z rotations

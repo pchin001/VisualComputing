@@ -38,7 +38,7 @@ for i = 1:n
     camera(:,:,3) = [0 0 0 1;   0    0   vlen  1]';
     
     % for each unit vector
-    for j = 1:3
+    for j = 3:3
         % rotate and translate
         camera(:,:,j) = translation(:,:,i)*rotation(:,:,i)*camera(:,:,j);
         % normalize

@@ -13,7 +13,6 @@ A = zeros(size(pts1, 1), 8);
                    pts2(i,1), pts1(i, 1)*pts2(i, 2), pts1(i, 2)*pts2(i, 2), ...
                    pts2(i, 2), pts1(i, 1), pts1(i, 2)]; 
     end
-    f = -inv(A'*A) * A'; 
-    fmatrix = mean(f, 2); 
+    f = linsolve(A, zeros(8, 1)); 
 end
 

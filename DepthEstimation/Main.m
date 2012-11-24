@@ -3,9 +3,17 @@ clc
 clear all
 
 
-%% Set options
+%% Set necessary information
 
-numCams = 3;
+imgs = [
+    '4177';
+    '4178';
+    '4180';
+    '4199';
+    '4201';
+];
+
+[numCams,~] = size(imgs);
 numPts = 2;
 
 

@@ -1,0 +1,31 @@
+﻿Build started 11/29/2012 7:45:15 PM.
+     1>Project "Z:\pchin\VisualComputing\Graphics\Graphics\Graphics.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Touching "Debug\Graphics.unsuccessfulbuild".
+       ClCompile:
+         c:\Program Files\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TC /analyze- /errorReport:prompt cube.c inputModule.c sceneModule.c
+         sceneModule.c
+         inputModule.c
+         cube.c
+         Generating Code...
+       ManifestResourceCompile:
+         C:\Program Files\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /nologo /fo"Debug\Graphics.exe.embed.manifest.res" Debug\Graphics_manifest.rc 
+       Link:
+         c:\Program Files\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"Z:\pchin\VisualComputing\Graphics\Debug\Graphics.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\Graphics.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"Z:\pchin\VisualComputing\Graphics\Debug\Graphics.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"Z:\pchin\VisualComputing\Graphics\Debug\Graphics.lib" /MACHINE:X86 Debug\Graphics.exe.embed.manifest.res
+         Debug\cube.obj
+         Debug\inputModule.obj
+         Debug\sceneModule.obj
+       Manifest:
+         C:\Program Files\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /out:"Debug\Graphics.exe.embed.manifest" /manifest Debug\Graphics.exe.intermediate.manifest
+         C:\Program Files\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /nologo /fo"Debug\Graphics.exe.embed.manifest.res" Debug\Graphics_manifest.rc 
+       LinkEmbedManifest:
+         All outputs are up-to-date.
+         Graphics.vcxproj -> Z:\pchin\VisualComputing\Graphics\Debug\Graphics.exe
+       FinalizeBuildStatus:
+         Deleting file "Debug\Graphics.unsuccessfulbuild".
+         Touching "Debug\Graphics.lastbuildstate".
+     1>Done Building Project "Z:\pchin\VisualComputing\Graphics\Graphics\Graphics.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:01.53

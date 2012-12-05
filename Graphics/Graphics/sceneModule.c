@@ -7,6 +7,8 @@
 #include "sceneModule.h"
 #include "inputModule.h"
 
+#include "my_gl.h"
+
 static float cubeColors[6][4] =
 {
   {0.8, 0.8, 0.8, 1.0},

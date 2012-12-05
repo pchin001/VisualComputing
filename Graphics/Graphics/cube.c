@@ -15,6 +15,8 @@
 #include "viewModule.h"
 #include "inputModule.h"
 
+#include "my_gl.h"
+
 int window;
 int updateFlag;
 
